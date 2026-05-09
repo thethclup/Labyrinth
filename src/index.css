@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-void: #050508;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-void);
+    color: white;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
