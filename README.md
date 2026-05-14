@@ -1,20 +1,37 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Thread Labyrinth - Labyrinth Vert Orchestrator
 
-# Run and deploy your AI Studio app
+**Thread Labyrinth** is a unique puzzle-adventure game powered by Base mainnet, integrating **ERC-8021** (Transaction Attribution) and **ERC-8004** (Trustless Agents). You weave paths, pull glowing threads, and navigate the void maze.
 
-This contains everything you need to run your app locally.
+## AI Agent (Labyrinth Vert Orchestrator)
 
-View your app in AI Studio: https://ai.studio/apps/18708d83-ab76-4edb-a1f3-a144cea233d0
+This project includes a fully compliant ERC-8004 Trustless Agent. The agent provides active command execution, labyrinth orchestration, and complex puzzle solving.
 
-## Run Locally
+The Agent Identity config is located at:
+- `/.well-known/agent-card.json`
 
-**Prerequisites:**  Node.js
+## Active MCP API
 
+This project also runs an Express-based Node server hosting the following AI endpoints:
+- `GET /api/agent`: Provides basic state and version info for the Labyrinth Vert Orchestrator.
+- `GET /api/mcp` and `POST /api/mcp`: A Model Context Protocol (MCP) server enabling active reasoning and pathfinding automations.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Tech Stack
+
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Framer Motion
+- **Web3**: Wagmi, Viem (Base Mainnet Integration)
+- **Backend**: Node.js + Express (handling MCP standard interactions)
+- **Graphics**: HTML5 Canvas with custom Node/Spring Physics Engine
+
+## Setup & Running Locally
+
+1. Create a `.env` based on `.env.example`. Be sure you **do not** commit private API keys.
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Run the development server (which spins up the Express server with Vite middleware):
+   ```bash
+   npm run dev
+   ```
+
+*Sensitive data placeholders are used throughout the codebase logic. Adjust environmental variables appropriately for production deployments.*
