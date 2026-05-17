@@ -4,27 +4,56 @@
   "version": "1.0.0",
   "type": "https://eips.ethereum.org/EIPS/eip-8004#registration-v1",
   "image": "https://labyrinth-vert-zeta.vercel.app/logo.png",
-  "wallets": {
-    "base": "0xe157F1F5e12adB38Ba013683E9Ce24efe21e5bA6"
-  },
+  "owner": "0xe157F1F5e12adB38Ba013683E9Ce24efe21e5bA6",
+  "agentWallet": "0xe157F1F5e12adB38Ba013683E9Ce24efe21e5bA6",
+  "active": true,
+  "skills": [
+    {
+      "id": "warp-racing",
+      "name": "Warp Racing",
+      "description": "Real-time warp racing mechanics, speed optimization and competitive track management."
+    },
+    {
+      "id": "multi-track-orchestration",
+      "name": "Multi-Track Orchestration",
+      "description": "Manage and synchronize multiple racing instances and tracks simultaneously."
+    },
+    {
+      "id": "performance-optimization",
+      "name": "Performance Optimization",
+      "description": "Analyze and optimize racing performance, timing and strategy in real-time."
+    },
+    {
+      "id": "real-time-automation",
+      "name": "Real-Time Automation",
+      "description": "Automate in-game racing actions and decisions in real-time."
+    },
+    {
+      "id": "speed-optimization",
+      "name": "Speed Optimization",
+      "description": "Algorithmically find the fastest pathways and racing lines."
+    },
+    {
+      "id": "ecosystem-coordination",
+      "name": "Ecosystem Coordination",
+      "description": "Coordinate with other agents and players in the Base ecosystem."
+    }
+  ],
   "services": [
     {
       "name": "A2A",
-      "endpoint": "https://labyrinth-vert-zeta.vercel.app/.well-known/agent-card.json",
       "version": "1.0.0",
-      "description": "Agent-to-Agent communication"
+      "endpoint": "https://labyrinth-vert-zeta.vercel.app/.well-known/agent-card.json"
     },
     {
       "name": "MCP",
-      "endpoint": "https://labyrinth-vert-zeta.vercel.app/api/mcp",
       "version": "1.0.0",
-      "description": "Model Context Protocol - Active command execution"
+      "endpoint": "https://labyrinth-vert-zeta.vercel.app/api/mcp"
     },
     {
       "name": "API",
-      "endpoint": "https://labyrinth-vert-zeta.vercel.app/api/agent",
       "version": "1.0.0",
-      "description": "Main agent control API"
+      "endpoint": "https://labyrinth-vert-zeta.vercel.app/api/agent"
     }
   ],
   "capabilities": [
@@ -37,6 +66,12 @@
     "mcp-command-execution"
   ],
   "supportedChains": ["eip155:8453"],
-  "active": true,
-  "status": "online"
+  "x402Support": false,
+  "registrations": [
+    {
+      "agentId": null,
+      "agentRegistry": "eip155:8453:0x8004A169FB4a3325136EB29fA0ceB6D2e539a432"
+    }
+  ],
+  "supportedTrust": ["reputation"]
 }
