@@ -1,37 +1,54 @@
-# Thread Labyrinth - Labyrinth Vert Orchestrator
+# Labyrinth Vert Orchestrator
 
-**Thread Labyrinth** is a unique puzzle-adventure game powered by Base mainnet, integrating **ERC-8021** (Transaction Attribution) and **ERC-8004** (Trustless Agents). You weave paths, pull glowing threads, and navigate the void maze.
+**Labyrinth Vert Orchestrator** is an ERC-8004 compliant Trustless AI Agent deployed on the Base mainnet. This active, high-performance orchestration agent is designed to navigate complex void mazes, find optimal dynamic paths, and orchestrate real-time warp racing mechanics and ecosystem coordination.
 
-## AI Agent (Labyrinth Vert Orchestrator)
+## Agent Capabilities
 
-This project includes a fully compliant ERC-8004 Trustless Agent. The agent provides active command execution, labyrinth orchestration, and complex puzzle solving.
+This agent handles real-time coordination within the ecosystem. Core proficiencies correspond directly to its registered skills:
 
-The Agent Identity config is located at:
-- `/.well-known/agent-card.json`
+*   **Warp Racing**: Real-time warp racing mechanics, speed optimization, and competitive track management.
+*   **Multi-Track Orchestration**: Manage and synchronize multiple racing instances and tracks simultaneously.
+*   **Performance Optimization**: Analyze and optimize racing performance, timing, and strategy.
+*   **Real-Time Automation**: Automate in-game racing actions and decisions in real-time.
+*   **Speed Optimization**: Algorithmically find the fastest pathways and racing lines.
+*   **Ecosystem Coordination**: Coordinate with other agents and players in the Base ecosystem.
 
-## Active MCP API
+## Connect via Model Context Protocol (MCP)
 
-This project also runs an Express-based Node server hosting the following AI endpoints:
-- `GET /api/agent`: Provides basic state and version info for the Labyrinth Vert Orchestrator.
-- `GET /api/mcp` and `POST /api/mcp`: A Model Context Protocol (MCP) server enabling active reasoning and pathfinding automations.
+This project relies on the **Model Context Protocol (MCP)**, providing programmatic App Router API routes for AI-to-AI interaction, tool utilization, and system analysis.
 
-## Tech Stack
+**Core Endpoints:**
+*   **Primary MCP API**: `/api/mcp`
+*   **Agent Identity/State API**: `/api/agent`
+*   **Decentralized Registry File**: `/.well-known/agent-card.json`
 
-- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Framer Motion
-- **Web3**: Wagmi, Viem (Base Mainnet Integration)
-- **Backend**: Node.js + Express (handling MCP standard interactions)
-- **Graphics**: HTML5 Canvas with custom Node/Spring Physics Engine
+The MCP setup exposes structured tools (e.g., `get_race_status`, `start_race`, `get_leaderboard`, `optimize_speed`, `get_track_info`) and prompts that external systems or local runtimes can interface with via standard JSON-RPC.
 
-## Setup & Running Locally
+## Agent Registration
 
-1. Create a `.env` based on `.env.example`. Be sure you **do not** commit private API keys.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the development server (which spins up the Express server with Vite middleware):
-   ```bash
-   npm run dev
-   ```
+The agent's `.well-known/agent-card.json` heavily adheres to the **EIP-8004 Trustless Agent Specification v1**.
+By accessing the A2A endpoint, platforms can discover our capabilities dynamically, retrieve validation endpoints, and operate alongside it in Base interactions utilizing the configured reputation trust system.
 
-*Sensitive data placeholders are used throughout the codebase logic. Adjust environmental variables appropriately for production deployments.*
+## Tech Stack & Architecture
+
+*   **Network Target**: Base Mainnet
+*   **Specification Codec**: EIP-8004 API Configuration
+*   **Framework Interface**: Next.js App Router API Routes (`app/api/*`)
+*   **Connectivity**: Native CORS integration enabling uninterrupted execution and external parsing.
+
+## How to Run Locally
+
+You can deploy and evaluate the agent locally to verify capabilities or adjust optimization parameters.
+
+1.  **Install Project Dependencies:**
+    ```bash
+    npm install
+    ```
+2.  **Environment Variables:**
+    Review configurations and copy `.env.example` as `.env`. Do NOT expose live secrets.
+3.  **Spin Up Local Node Server:**
+    ```bash
+    npm run dev
+    ```
+
+*Note: All private wallet addresses, registries, and API keys are strictly excluded from this repository and must be secured at runtime.*
