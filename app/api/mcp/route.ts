@@ -70,7 +70,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+    let body = {};
+    try {
+      body = await req.json();
+    } catch (e) {
+      // Ignore empty body errors
+    }
     
     // Standard JSON-RPC Methods for MCP Validation
     if (body.method) {
