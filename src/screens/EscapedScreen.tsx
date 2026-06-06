@@ -3,7 +3,7 @@ import { useGameStore } from '../store/useGameStore';
 import { useAccount, useSendTransaction } from 'wagmi';
 import { generateAttributionPayload } from '../lib/erc8021';
 import { useState } from 'react';
-import { CheckCircle2, Hexagon } from 'lucide-react';
+import { CheckCircle2, Hexagon, Sun } from 'lucide-react';
 import { stringToHex, concat } from 'viem';
 
 export function EscapedScreen() {
@@ -93,6 +93,22 @@ export function EscapedScreen() {
           transition={{ delay: 2.5 }}
           className="flex flex-col w-full gap-4 mt-4"
         >
+          {isConnected && (
+            <button
+              onClick={() => {
+                sendTransaction({
+                  to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
+                  value: 0n,
+                  data: stringToHex('GM'),
+                });
+              }}
+              className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center justify-center gap-2 font-['Cinzel'] text-xs font-bold w-full uppercase"
+            >
+              <Sun size={16} />
+              Say GM
+            </button>
+          )}
+
           {isConnected ? (
             isSuccess ? (
               <button disabled className="flex items-center justify-center gap-2 w-full py-4 text-xs font-black tracking-widest text-emerald-400 border border-emerald-500/30 rounded-2xl bg-emerald-500/10 uppercase transition-all">
