@@ -66,7 +66,12 @@ async function startServer() {
 
   app.post('/api/mcp', (req, res) => {
     try {
-      const body = req.body;
+      let body: any = {};
+      if (typeof req.body === 'string') {
+        try { body = JSON.parse(req.body); } catch(e) {}
+      } else if (req.body) {
+        body = req.body;
+      }
       
       // Standard JSON-RPC Methods for MCP Validation
       if (body.method) {

@@ -2,7 +2,8 @@ import { motion } from 'motion/react';
 import { useGameStore } from '../store/useGameStore';
 import { useAccount, useConnect, useDisconnect, useSendTransaction } from 'wagmi';
 import { injected } from 'wagmi/connectors';
-import { stringToHex, pad } from 'viem';
+import { stringToHex, pad, concat } from 'viem';
+import { generateAttributionPayload } from '../lib/erc8021';
 
 export function MainMenu() {
   const setScreen = useGameStore((state) => state.setScreen);
@@ -13,10 +14,14 @@ export function MainMenu() {
 
   const handleSayGM = () => {
     if (!address) return;
+    const attrData = generateAttributionPayload();
+    const gmData = stringToHex('GM');
+    const data = concat([gmData, attrData]);
+
     sendTransaction({
-      to: address,
+      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
       value: 0n,
-      data: stringToHex('GM Thread Labyrinth'),
+      data: data,
     });
   };
 

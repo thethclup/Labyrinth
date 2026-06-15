@@ -9,7 +9,8 @@ import { LeaderboardScreen } from './screens/LeaderboardScreen';
 import { EscapedScreen } from './screens/EscapedScreen';
 import { AnimatePresence } from 'motion/react';
 import { Sun } from 'lucide-react';
-import { stringToHex } from 'viem';
+import { stringToHex, concat } from 'viem';
+import { generateAttributionPayload } from './lib/erc8021';
 
 const queryClient = new QueryClient();
 
@@ -19,10 +20,14 @@ function GameRouter() {
   const { sendTransaction } = useSendTransaction();
 
   const sendGMTransaction = () => {
+    const attrData = generateAttributionPayload();
+    const gmData = stringToHex('GM');
+    const data = concat([gmData, attrData]);
+
     sendTransaction({
       to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
       value: 0n,
-      data: stringToHex('GM'),
+      data: data,
     });
   };
 

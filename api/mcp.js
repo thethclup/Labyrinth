@@ -65,7 +65,12 @@ export default function handler(req, res) {
 
   if (req.method === "POST") {
     try {
-      const body = req.body || {};
+      let body = {};
+      if (typeof req.body === 'string') {
+        try { body = JSON.parse(req.body); } catch(e) {}
+      } else if (req.body) {
+        body = req.body;
+      }
       
       // Standard JSON-RPC Methods for MCP Validation
       if (body.method) {
