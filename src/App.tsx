@@ -1,6 +1,17 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { WagmiProvider, useAccount, useSendTransaction } from 'wagmi';
-import { wagmiConfig } from './lib/web3/wagmi';
+import {
+  WagmiProvider,
+  useAccount,
+  useSendTransaction,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
+import {
+  wagmiConfig,
+  baseDenim,
+  DENIM_BLOCK_TIME_MS,
+  GM_RECIPIENT_ADDRESS,
+} from './lib/web3/wagmi';
 import { useGameStore } from './store/useGameStore';
 import { MainMenu } from './screens/MainMenu';
 import { GameScreen } from './screens/GameScreen';
@@ -8,7 +19,7 @@ import { CodexScreen } from './screens/CodexScreen';
 import { LeaderboardScreen } from './screens/LeaderboardScreen';
 import { EscapedScreen } from './screens/EscapedScreen';
 import { AnimatePresence } from 'motion/react';
-import { Sun } from 'lucide-react';
+import { Sun, Check } from 'lucide-react';
 import { stringToHex, concat } from 'viem';
 import { generateAttributionPayload } from './lib/erc8021';
 
@@ -16,19 +27,38 @@ const queryClient = new QueryClient();
 
 function GameRouter() {
   const currentScreen = useGameStore((state) => state.currentScreen);
-  const { isConnected } = useAccount();
-  const { sendTransaction } = useSendTransaction();
-
-  const sendGMTransaction = () => {
-    const attrData = generateAttributionPayload();
-    const gmData = stringToHex('GM');
-    const data = concat([gmData, attrData]);
-
-    sendTransaction({
-      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
-      value: 0n,
-      data: data,
+  const { isConnected, chainId } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
+  const {
+    data: gmTxHash,
+    sendTransaction,
+    isPending: isSending,
+  } = useSendTransaction();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: gmTxHash,
+      chainId: baseDenim.id,
+      pollingInterval: DENIM_BLOCK_TIME_MS,
     });
+
+  const sendGMTransaction = async () => {
+    try {
+      if (chainId !== baseDenim.id) {
+        await switchChainAsync({ chainId: baseDenim.id });
+      }
+      const attrData = generateAttributionPayload();
+      const gmData = stringToHex('GM');
+      const data = concat([gmData, attrData]);
+
+      sendTransaction({
+        chainId: baseDenim.id,
+        to: GM_RECIPIENT_ADDRESS,
+        value: 0n,
+        data,
+      });
+    } catch {
+      // User rejected chain switch or wallet prompt
+    }
   };
 
   return (
@@ -42,10 +72,17 @@ function GameRouter() {
         <div className="absolute top-4 right-4 z-50">
           <button
             onClick={sendGMTransaction}
-            className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold"
+            disabled={isSending || isConfirming}
+            className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center gap-2 font-['Cinzel'] text-xs font-bold disabled:opacity-60"
           >
-            <Sun size={16} />
-            Say GM
+            {isConfirmed ? <Check size={16} /> : <Sun size={16} />}
+            {isSending
+              ? 'Wallet...'
+              : isConfirming
+                ? 'Confirming...'
+                : isConfirmed
+                  ? 'GM Confirmed'
+                  : 'Say GM'}
           </button>
         </div>
       )}

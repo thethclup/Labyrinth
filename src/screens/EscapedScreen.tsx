@@ -1,42 +1,105 @@
 import { motion } from 'motion/react';
 import { useGameStore } from '../store/useGameStore';
-import { useAccount, useSendTransaction } from 'wagmi';
+import {
+  useAccount,
+  useSendTransaction,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
 import { generateAttributionPayload } from '../lib/erc8021';
 import { useState } from 'react';
-import { CheckCircle2, Hexagon, Sun } from 'lucide-react';
+import { CheckCircle2, Hexagon, Sun, Check } from 'lucide-react';
 import { stringToHex, concat } from 'viem';
+import {
+  baseDenim,
+  DENIM_BLOCK_TIME_MS,
+  GM_RECIPIENT_ADDRESS,
+} from '../lib/web3/wagmi';
 
 export function EscapedScreen() {
   const setScreen = useGameStore((state) => state.setScreen);
   const { advanceLevel, level } = useGameStore();
-  const { isConnected, address } = useAccount();
-  const { sendTransaction, isPending, isSuccess } = useSendTransaction();
+  const { isConnected, address, chainId } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
+
+  const {
+    data: journeyTxHash,
+    sendTransaction: sendJourneyTx,
+    isPending: isJourneyPending,
+  } = useSendTransaction();
+  const { isLoading: isJourneyConfirming, isSuccess: isJourneyConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: journeyTxHash,
+      chainId: baseDenim.id,
+      pollingInterval: DENIM_BLOCK_TIME_MS,
+    });
+
+  const {
+    data: gmTxHash,
+    sendTransaction: sendGmTx,
+    isPending: isGmPending,
+  } = useSendTransaction();
+  const { isLoading: isGmConfirming, isSuccess: isGmConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: gmTxHash,
+      chainId: baseDenim.id,
+      pollingInterval: DENIM_BLOCK_TIME_MS,
+    });
+
   const [isMinting, setIsMinting] = useState(false);
 
-  const handleRecordJourney = () => {
+  const ensureBaseMainnet = async () => {
+    if (chainId !== baseDenim.id) {
+      await switchChainAsync({ chainId: baseDenim.id });
+    }
+  };
+
+  const handleSayGM = async () => {
+    if (!isConnected) return;
+    try {
+      await ensureBaseMainnet();
+      const attrData = generateAttributionPayload();
+      const gmData = stringToHex('GM');
+      sendGmTx({
+        chainId: baseDenim.id,
+        to: GM_RECIPIENT_ADDRESS,
+        value: 0n,
+        data: concat([gmData, attrData]),
+      });
+    } catch {
+      // User cancelled switch or tx
+    }
+  };
+
+  const handleRecordJourney = async () => {
     if (!isConnected || !address) return;
     setIsMinting(true);
-    
+
     try {
+      await ensureBaseMainnet();
       // Create transaction with ERC-8021 attribution payload + Score data
       const attrData = generateAttributionPayload();
       const scoreData = stringToHex(`ThreadLabyrinth_MaxLvl_${level}_`);
       const data = concat([scoreData, attrData]);
-      
-      // Send dummy transaction to self to record interaction with ERC-8021 data
-      sendTransaction({
-        to: address,
-        value: 0n,
-        data: data,
-      }, {
-        onSuccess: () => {
-           setIsMinting(false);
+
+      // Send transaction to self to record interaction with ERC-8021 data on Base Mainnet
+      sendJourneyTx(
+        {
+          chainId: baseDenim.id,
+          to: address,
+          value: 0n,
+          data,
         },
-        onError: () => {
-           setIsMinting(false);
-        }
-      });
-    } catch(e) {
+        {
+          onSuccess: () => {
+            setIsMinting(false);
+          },
+          onError: () => {
+            setIsMinting(false);
+          },
+        },
+      );
+    } catch {
       setIsMinting(false);
     }
   };
@@ -95,32 +158,37 @@ export function EscapedScreen() {
         >
           {isConnected && (
             <button
-              onClick={() => {
-                sendTransaction({
-                  to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
-                  value: 0n,
-                  data: stringToHex('GM'),
-                });
-              }}
-              className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center justify-center gap-2 font-['Cinzel'] text-xs font-bold w-full uppercase"
+              onClick={handleSayGM}
+              disabled={isGmPending || isGmConfirming}
+              className="px-3 py-2 rounded-lg bg-[#E8A020]/20 hover:bg-[#E8A020]/30 border border-[#E8A020]/40 text-[#E8A020] transition-colors flex items-center justify-center gap-2 font-['Cinzel'] text-xs font-bold w-full uppercase disabled:opacity-60"
             >
-              <Sun size={16} />
-              Say GM
+              {isGmConfirmed ? <Check size={16} /> : <Sun size={16} />}
+              {isGmPending
+                ? 'Waiting for wallet...'
+                : isGmConfirming
+                  ? 'Confirming on Base...'
+                  : isGmConfirmed
+                    ? 'GM Confirmed'
+                    : 'Say GM'}
             </button>
           )}
 
           {isConnected ? (
-            isSuccess ? (
+            isJourneyConfirmed ? (
               <button disabled className="flex items-center justify-center gap-2 w-full py-4 text-xs font-black tracking-widest text-emerald-400 border border-emerald-500/30 rounded-2xl bg-emerald-500/10 uppercase transition-all">
                 <CheckCircle2 size={18} /> Recorded on Base
               </button>
             ) : (
               <button
                 onClick={handleRecordJourney}
-                disabled={isPending || isMinting}
+                disabled={isJourneyPending || isJourneyConfirming || isMinting}
                 className="w-full py-4 text-xs font-black tracking-widest text-black uppercase transition-all duration-300 rounded-2xl bg-cyan-500 active:scale-95 disabled:opacity-50"
               >
-                {isPending || isMinting ? 'Waiting for wallet...' : 'Record Journey On-Chain'}
+                {isJourneyPending || isMinting
+                  ? 'Waiting for wallet...'
+                  : isJourneyConfirming
+                    ? 'Confirming block...'
+                    : 'Record Journey On-Chain'}
               </button>
             )
           ) : (

@@ -10,11 +10,15 @@ export interface AgentConfig {
   capabilities: string[];
 }
 
-export const AGENT_REGISTRY: Address = '0x0000000000000000000000000000000000000000'; // Placeholder
+export const BASE_CHAIN_CAIP2 = 'eip155:8453' as const;
+export const AGENT_REGISTRY: Address = '0x8004A169FB4a3325136EB29fA0ceB6D2e539a432';
 
 export function getAgentStatus(agentAddress: Address) {
-  // Mock function to check agent status on-chain
+  // Returns local agent status metadata for Base Mainnet
   return {
+    agentAddress,
+    registry: AGENT_REGISTRY,
+    chain: BASE_CHAIN_CAIP2,
     isActive: true,
     lastAction: Date.now(),
   };

@@ -1,28 +1,57 @@
 import { motion } from 'motion/react';
 import { useGameStore } from '../store/useGameStore';
-import { useAccount, useConnect, useDisconnect, useSendTransaction } from 'wagmi';
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useSendTransaction,
+  useSwitchChain,
+  useWaitForTransactionReceipt,
+} from 'wagmi';
 import { injected } from 'wagmi/connectors';
-import { stringToHex, pad, concat } from 'viem';
+import { stringToHex, concat } from 'viem';
 import { generateAttributionPayload } from '../lib/erc8021';
+import {
+  baseDenim,
+  DENIM_BLOCK_TIME_MS,
+  GM_RECIPIENT_ADDRESS,
+} from '../lib/web3/wagmi';
 
 export function MainMenu() {
   const setScreen = useGameStore((state) => state.setScreen);
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, chainId } = useAccount();
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
-  const { sendTransaction, isPending } = useSendTransaction();
-
-  const handleSayGM = () => {
-    if (!address) return;
-    const attrData = generateAttributionPayload();
-    const gmData = stringToHex('GM');
-    const data = concat([gmData, attrData]);
-
-    sendTransaction({
-      to: '0xcD0dd3716C5561De47a24949335dF8a8CD8F71a3',
-      value: 0n,
-      data: data,
+  const { switchChainAsync, isPending: isSwitching } = useSwitchChain();
+  const { data: gmHash, sendTransaction, isPending } = useSendTransaction();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } =
+    useWaitForTransactionReceipt({
+      hash: gmHash,
+      chainId: baseDenim.id,
+      pollingInterval: DENIM_BLOCK_TIME_MS,
     });
+
+  const isWrongNetwork = isConnected && chainId !== baseDenim.id;
+
+  const handleSayGM = async () => {
+    if (!address) return;
+    try {
+      if (chainId !== baseDenim.id) {
+        await switchChainAsync({ chainId: baseDenim.id });
+      }
+      const attrData = generateAttributionPayload();
+      const gmData = stringToHex('GM');
+      const data = concat([gmData, attrData]);
+
+      sendTransaction({
+        chainId: baseDenim.id,
+        to: GM_RECIPIENT_ADDRESS,
+        value: 0n,
+        data,
+      });
+    } catch {
+      // User cancelled switch or transaction
+    }
   };
 
   return (
@@ -96,20 +125,38 @@ export function MainMenu() {
           {isConnected ? (
             <div className="flex flex-col items-center gap-4 bg-white/5 backdrop-blur-lg border border-white/10 px-6 py-4 rounded-3xl pointer-events-auto">
               <div className="flex items-center gap-3">
-                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                <span className="text-xs font-semibold uppercase tracking-widest text-white/70">Base Mainnet</span>
+                <div className={`w-2 h-2 rounded-full ${isWrongNetwork ? 'bg-amber-400' : 'bg-blue-500'}`}></div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-white/70">
+                  {isWrongNetwork ? 'Switch to Base Mainnet' : 'Base Mainnet'}
+                </span>
                 <span className="px-3 py-1 bg-white/10 border border-white/20 rounded-full text-xs font-mono">
                   {address?.slice(0, 6)}...{address?.slice(-4)}
                 </span>
               </div>
               <div className="flex items-center gap-4 w-full">
-                <button 
-                  onClick={handleSayGM}
-                  disabled={isPending}
-                  className="flex-1 py-2 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold uppercase text-xs tracking-widest active:scale-95 transition-transform disabled:opacity-50 border border-cyan-500/30"
-                >
-                  {isPending ? 'Sending...' : 'Say GM'}
-                </button>
+                {isWrongNetwork ? (
+                  <button
+                    onClick={() => switchChainAsync({ chainId: baseDenim.id })}
+                    disabled={isSwitching}
+                    className="flex-1 py-2 px-3 rounded-xl bg-amber-500/20 text-amber-300 font-bold uppercase text-xs tracking-widest active:scale-95 transition-transform disabled:opacity-50 border border-amber-500/30"
+                  >
+                    {isSwitching ? 'Switching...' : 'Switch to Base'}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleSayGM}
+                    disabled={isPending || isConfirming}
+                    className="flex-1 py-2 rounded-xl bg-cyan-500/20 text-cyan-400 font-bold uppercase text-xs tracking-widest active:scale-95 transition-transform disabled:opacity-50 border border-cyan-500/30"
+                  >
+                    {isPending
+                      ? 'Sending...'
+                      : isConfirming
+                        ? 'Confirming...'
+                        : isConfirmed
+                          ? 'GM Confirmed'
+                          : 'Say GM'}
+                  </button>
+                )}
                 <button 
                   onClick={() => disconnect()}
                   className="flex-1 py-2 rounded-xl border border-white/10 text-white/40 hover:text-white hover:bg-white/5 uppercase text-xs font-bold tracking-widest transition-colors"
